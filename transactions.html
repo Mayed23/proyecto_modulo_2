@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+
+    <!-- Enlace a fremwork Boostrap-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <!--Fontawesome-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+<link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+<body>
+    <header class="d-flex justify-content-between align-items-center">
+        <a href="menu.html" class="btn btn-outline-light"><i class="fa-solid fa-reply"></i></a>
+        <h1 class="text-center">Alke Wallet</h1>
+        <button id="logout" class="btn btn-outline-danger "><i class="fa-solid fa-power-off"></i></button>
+    </header>
+
+    <main>
+
+        <section class="container mt-4">
+            
+            <h2 class="text-center">Movimiento de Cuenta</h2>
+
+            <p class="text-center fs-4" >Historial completo de transacciones</p>
+
+            <section class="justify-content-center">
+                <div class="d-flex flex-wrap gap-2" id="montos-rapidos">
+                    <button  type="button" id="btn-todos"  class="btn btn btn-mint col-auto">Todos</button>  
+                    <button  type="button" id="btn-depositos"  class="btn btn btn-mint col-auto">Depositos</button>  
+                    <button  type="button" id="btn-envios" class="btn btn btn-mint col-auto">Envíos</button>  
+                <div>
+            </section>
+                <div class="glass-card mt-3" id="lista-movimientos"></div>
+                <p class="text-center mt-3" id="mensaje-vacio" style="display:none; opacity:0.6;">No hay movimientos para mostrar.</p>
+            
+        </section>    
+    </main>
+    <footer>
+
+        <p class="text-center">&copy; 2026 Alke Wallet </p>
+        <p class="text-center">Todos los derechos reservados.</p> 
+
+    </footer>
+    
+    <script> 
+        // Evitar que el botón "atrás" muestre una versión cacheada del menú
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+            window.location.reload();
+            }
+        })
+         //proteger vista menu
+        const usuarioActivo = localStorage.getItem("usuarioActivo");
+            if(!usuarioActivo){
+            window.location.href="login.html"
+            }
+         //Cerrar sesion
+        document.getElementById("logout").addEventListener("click",function(){
+            localStorage.removeItem("usuarioActivo");
+            window.location.href="login.html"
+        })
+        
+        // Recuperar el historial y ordenarlo del más reciente al más antiguo
+        const transacciones = JSON.parse(localStorage.getItem("transacciones")) || [];
+        const ordenadas = [...transacciones].sort(function (a, b) {
+            return new Date(b.fecha) - new Date(a.fecha);
+        });
+
+        function formatearFecha(fechaISO) {
+            const fecha = new Date(fechaISO);
+            const parteFecha = fecha.toLocaleDateString("es-CL", { day: "2-digit", month: "short" }).replace(".", "");
+            const parteHora = fecha.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit", hour12: true });
+            return `${parteFecha} · ${parteHora}`;
+        }
+
+        function formatearMonto(monto) {
+            return "$" + Number(monto).toLocaleString("es-CL");
+        }
+
+        // Obtiene las iniciales del nombre para el círculo de avatar
+        function obtenerIniciales(nombre) {
+            if (!nombre) return "??";
+            const partes = nombre.trim().split(" ");
+            if (partes.length >= 2) {
+                return (partes[0][0] + partes[1][0]).toUpperCase();
+            }
+            return nombre.substring(0, 2).toUpperCase();
+        }
+
+        // Crea una fila de movimiento con el estilo translúcido
+        function crearFila(t) {
+            const esDeposito = t.tipo === "Depósito";
+            const nombreMostrado = esDeposito
+                ? (t.nombre ? `Depósito de ${t.nombre}` : "Depósito a tu cuenta")
+                : `Transferencia a ${t.nombre}`;
+            const iniciales = esDeposito ? "IN" : obtenerIniciales(t.nombre);
+            const signo = esDeposito ? "+" : "−";
+            const claseMonto = esDeposito ? "monto-positivo" : "monto-negativo";
+
+            const fila = document.createElement("div");
+            fila.className = "transaction-row";
+            fila.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="transaction-avatar">${iniciales}</div>
+                    <div class="transaction-info">
+                        <div class="nombre">${nombreMostrado}</div>
+                        <div class="fecha">${formatearFecha(t.fecha)}</div>
+                    </div>
+                </div>
+                <div class="${claseMonto}">${signo} ${formatearMonto(t.monto)}</div>`;
+            return fila;
+        }
+
+        // Muestra solo los 3 movimientos más recientes de la lista dada
+        function mostrarMovimientos(lista) {
+            const contenedor = document.getElementById("lista-movimientos");
+            const mensajeVacio = document.getElementById("mensaje-vacio");
+
+            contenedor.innerHTML = "";
+
+            const ultimosTres = lista.slice(0, 3);
+
+            if (ultimosTres.length === 0) {
+                contenedor.style.display = "none";
+                mensajeVacio.style.display = "block";
+                return;
+            }
+
+            contenedor.style.display = "block";
+            mensajeVacio.style.display = "none";
+            ultimosTres.forEach(function (t) {
+                contenedor.appendChild(crearFila(t));
+            });
+        }
+
+        // Resalta el botón de filtro activo
+        function marcarActivo(boton) {
+            document.querySelectorAll(".filter-pill").forEach(function (b) {
+                b.classList.remove("active");
+            });
+            boton.classList.add("active");
+        }
+
+        // Mostrar "Todos" al cargar la página
+        mostrarMovimientos(ordenadas);
+
+        document.getElementById("btn-todos").addEventListener("click", function () {
+            mostrarMovimientos(ordenadas);
+            marcarActivo(this);
+        });
+
+        document.getElementById("btn-depositos").addEventListener("click", function () {
+            mostrarMovimientos(ordenadas.filter(function (t) { return t.tipo === "Depósito"; }));
+            marcarActivo(this);
+        });
+
+        document.getElementById("btn-envios").addEventListener("click", function () {
+            mostrarMovimientos(ordenadas.filter(function (t) { return t.tipo === "Envío"; }));
+            marcarActivo(this);
+        });
+
+    </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+</body>
+</html>

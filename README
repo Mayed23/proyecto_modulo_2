@@ -1,0 +1,25 @@
+PROYECTO MODULO 2 ----------------- 
+REQUERIMIENTOS GENERALES:
+→ Registro e inicio de sesión: 
+    Se les asignará a los usuarios una cuenta
+    y acceder a la aplicación utilizando credenciales seguras. (pantalla 1)
+→ Administración de fondos: 
+    Los usuarios deben poder ver su saldo disponible, 
+    realizar depósitos y retiros de fondos. (pantalla 2)
+→ Envío y recepción de fondos: 
+    Los usuarios deben poder simular un envió de fondos
+    a otras cuentas dentro de la aplicación y recibir fondos propios. (pantalla 3) 
+Pág. 2 → Historial de transacciones: 
+    Debe haber un registro completo de todas las 
+    transacciones realizadas en la aplicación. (pantalla 4) 
+QUE USAR? --------- 
+    → Utilizar para el Frontend: ○ HTML ○ CSS ○ JavaScript ○ Bootstrap ○ JQuery 
+QUE SE EVALUA? -------------- 
+    → Aspectos técnicos: ↪ Legibilidad del código: Se evaluará la claridad 
+    y organización del código desarrollado, asegurando buenas prácticas de programación 
+    y facilidad de mantenimiento. 
+→ Aspectos de performance: ↪ Experiencia del usuario y desarrollo del proyecto: 
+Se evaluará la interfaz de usuario y la facilidad de uso de la aplicación, 
+asegurando una experiencia agradable y sin problemas para los usuarios.
+
+

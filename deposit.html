@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit</title>
+
+    <!-- Enlace a fremwork Boostrap-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <!--Fontawesome-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+
+    <link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+<body>
+    <header class="d-flex justify-content-between align-items-center">
+        <a href="menu.html" class="btn btn-outline-light"><i class="fa-solid fa-reply"></i></a>
+        <h1 class="text-center">Alke Wallet</h1>
+        <button id="logout" class="btn btn-outline-danger"><i class="fa-solid fa-power-off"></i></button>
+    </header>
+    <main>
+        <section class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-10 col-md-6 col-lg-4">
+                    <div id="mensaje" class="mt-3"></div>
+                    <h2 class="text-center mb-4">Depósito</h2>
+                    <form id="form-deposito">
+                        <div class="mb-3">
+                            <div class="glass-card mb-3">
+                                <label for="monto" class="form-label">Monto a depositar</label>
+                                <input type="number" id="monto" class="form-control" placeholder="Ingrese el monto" min="1" required>
+                            </div>
+                            <label class="form-label">Montos rápidos</label>
+                            <div class="d-flex flex-wrap gap-2" id="montos-rapidos">
+                                <button type="button" class="btn btn-mint btn-sm monto-rapido" data-monto="5000">$5.000</button>
+                                <button type="button" class="btn btn-mint btn-sm monto-rapido" data-monto="10000">$10.000</button>
+                                <button type="button" class="btn btn-mint btn-sm monto-rapido" data-monto="20000">$20.000</button>
+                                <button type="button" class="btn btn-mint btn-sm monto-rapido" data-monto="50000">$50.000</button>
+                            </div>
+                        </div>
+                        <div id="confirmacion" class="alert alert-secondary" style="display:none;"></div>
+                        <div class="text-center mt-4">
+                            <button type="button" id="btn-confirmar" class="btn btn-blue">Confirmar Monto</button>
+                            <button type="submit" id="btn-depositar" class="btn btn-mint" style="display:none;">Depositar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+
+        <p class="text-center">&copy; 2026 Alke Wallet </p>
+        <p class="text-center">Todos los derechos reservados.</p> 
+
+    </f ooter>
+    <script>
+         // Evitar que el botón "atrás" muestre una versión cacheada de la página
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
+        // Proteger vista: solo usuarios con sesión iniciada
+        const usuarioActivo = localStorage.getItem("usuarioActivo");
+        if (!usuarioActivo) {
+            window.location.href = "login.html";
+        }
+
+        // Cerrar sesión
+        document.getElementById("logout").addEventListener("click", function () {
+            localStorage.removeItem("usuarioActivo");
+            window.location.href = "login.html";
+        });
+        
+        const inputMonto = document.getElementById("monto");
+        const btnConfirmar = document.getElementById("btn-confirmar");
+        const btnDepositar = document.getElementById("btn-depositar");
+        const confirmacion = document.getElementById("confirmacion");
+        const mensaje = document.getElementById("mensaje");
+
+        // Botones de montos rápidos: llenan el input al hacer clic
+        document.querySelectorAll(".monto-rapido").forEach(function (boton) {
+            boton.addEventListener("click", function () {
+                inputMonto.value = this.dataset.monto;
+                ocultarConfirmacion();
+            });
+        });
+          // Si el usuario cambia el monto después de confirmar, hay que confirmar de nuevo
+        inputMonto.addEventListener("input", ocultarConfirmacion);
+
+        function ocultarConfirmacion() {
+            confirmacion.style.display = "none";
+            btnDepositar.style.display = "none";
+            btnConfirmar.style.display = "inline-block";
+        }
+
+        // Paso 1: confirmar el monto ingresado
+        btnConfirmar.addEventListener("click", function () {
+            const monto = Number(inputMonto.value);
+
+            if (!monto || monto < 1) {
+                mensaje.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        Ingresa un monto válido (mínimo $1).
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>`;
+                return;
+            }
+
+            confirmacion.textContent = `Vas a depositar $${monto.toLocaleString("es-CL")} a tu cuenta.`;
+            confirmacion.style.display = "block";
+            btnConfirmar.style.display = "none";
+            btnDepositar.style.display = "inline-block";
+        });
+
+        // Paso 2: procesar el depósito
+        document.getElementById("form-deposito").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const monto = Number(inputMonto.value);
+
+            // Actualizar el saldo
+            const saldoActual = Number(localStorage.getItem("saldo")) || 0;
+            localStorage.setItem("saldo", saldoActual + monto);
+
+            // Registrar el movimiento en el historial de transacciones
+            const transacciones = JSON.parse(localStorage.getItem("transacciones")) || [];
+            transacciones.push({
+                fecha: new Date().toISOString(),
+                tipo: "Depósito",
+                monto: monto
+            });
+            localStorage.setItem("transacciones", JSON.stringify(transacciones));
+
+            mensaje.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ¡Depósito de $${monto.toLocaleString("es-CL")} realizado con éxito!
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+
+            setTimeout(function () {
+                window.location.href = "menu.html";
+            }, 2000);
+        });
+    </script>
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>
