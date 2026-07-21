@@ -77,27 +77,11 @@
      // jQuery y jQuery UI (para el autocompletado del destinatario)
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
+    
+        <script src="assets/js/sccrit.js"></script>
+    
     <script>
     
-       // Evitar que el botón "atrás" muestre una versión cacheada del menú
-        window.addEventListener("pageshow", function (event) {
-            if (event.persisted) {
-            window.location.reload();
-            }
-        })
-    
-        //proteger vista menu
-        const usuarioActivo = localStorage.getItem("usuarioActivo");
-        if(!usuarioActivo){
-        window.location.href="login.html"
-        }
-       //Cerrar sesion
-        document.getElementById("logout").addEventListener("click",function(){
-        localStorage.removeItem("usuarioActivo");
-        window.location.href="login.html"
-        })
-
         const inputDestinatario = document.getElementById("destinatario");
         const inputUsuarioNuevo = document.getElementById("usuario-nuevo");
         const datosNuevo = document.getElementById("datos-nuevo");
