@@ -47,25 +47,10 @@
         <p class="text-center">Todos los derechos reservados.</p> 
 
     </footer>
+
+    <script src="assets/js/sccrit.js"></script>
     
     <script> 
-        // Evitar que el botón "atrás" muestre una versión cacheada del menú
-        window.addEventListener("pageshow", function (event) {
-            if (event.persisted) {
-            window.location.reload();
-            }
-        })
-         //proteger vista menu
-        const usuarioActivo = localStorage.getItem("usuarioActivo");
-            if(!usuarioActivo){
-            window.location.href="login.html"
-            }
-         //Cerrar sesion
-        document.getElementById("logout").addEventListener("click",function(){
-            localStorage.removeItem("usuarioActivo");
-            window.location.href="login.html"
-        })
-        
         // Recuperar el historial y ordenarlo del más reciente al más antiguo
         const transacciones = JSON.parse(localStorage.getItem("transacciones")) || [];
         const ordenadas = [...transacciones].sort(function (a, b) {
